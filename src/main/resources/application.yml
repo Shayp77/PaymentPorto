@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: core-wallet
+
+  # 1. Koneksi ke PostgreSQL di Docker (Port 5433 yang kita set tadi)
+  datasource:
+    url: jdbc:postgresql://localhost:5433/wallet_db
+    username: jopin
+    password: password123
+    driver-class-name: org.postgresql.Driver
+
+  # 2. Konfigurasi Flyway (Otomatis jalanin file SQL di folder db/migration)
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+
+  # 3. Koneksi ke Redis di Docker (Port 6379)
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  # 4. Konfigurasi Spring Batch
+  batch:
+    job:
+      enabled: false # Supaya job batch tidak jalan sendiri pas aplikasi baru dinyalakan
+    jdbc:
+      initialize-schema: always # Otomatis membuat tabel metadata bawaan Spring Batch
+
+# Menampilkan log query SQL yang dieksekusi oleh JdbcClient di layar console
+logging:
+  level:
+    org.springframework.jdbc.core: DEBUG

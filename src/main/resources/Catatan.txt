@@ -1,0 +1,48 @@
+@Transactional
+    public UUID createNewPiggy(CreatePiggyRequest request) {
+        if (piggyRepository.existsByOwnerName(request.ownerName())) {
+            throw new IllegalArgumentException("Nama pemilik sudah terdaftar!");
+        }
+
+        UUID newId = UUID.randomUUID();
+        piggyRepository.insertPiggy(newId, request.ownerName(), request.initialMoney());
+        return newId;
+    }
+
+
+package com.asin.PayementPorto.controller;
+
+import com.asin.PayementPorto.dto.CreatePiggyRequest;
+import com.asin.PayementPorto.dto.PiggyBonusResponse;
+import com.asin.PayementPorto.service.PiggyService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/api/v1/piggies") // Prefix URL untuk semua endpoint di class ini
+@RequiredArgsConstructor
+public class PiggyController {
+
+    private final PiggyService piggyService;
+
+    // 1. GET http://localhost:8080/api/v1/piggies/{id}/bonus
+    @GetMapping("/{id}/bonus")
+    public ResponseEntity<PiggyBonusResponse> getPiggyBonus(@PathVariable UUID id) {
+        PiggyBonusResponse response = piggyService.getMoneyTimesTen(id);
+        return ResponseEntity.ok(response); // Mengembalikan HTTP 200 OK + JSON
+    }
+
+    // 2. POST http://localhost:8080/api/v1/piggies
+    @PostMapping
+    public ResponseEntity<UUID> createPiggy(@Valid @RequestBody CreatePiggyRequest request) {
+        // @Valid memicu pengecekan @NotBlank dan @Positive di dalam CreatePiggyRequest
+        // @RequestBody membaca body JSON dari Postman
+        UUID createdId = piggyService.createNewPiggy(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdId); // HTTP 201 Created
+    }
+}
