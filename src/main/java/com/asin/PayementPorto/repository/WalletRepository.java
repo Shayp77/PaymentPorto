@@ -42,4 +42,11 @@ public class WalletRepository {
                 .query(Wallet.class)
                 .optional();
     }
+    public void updateBalance(UUID walletid, BigDecimal newBalance){
+        String sql="Update wallets Set balance=?, updated_at=CURRENT_TIMESTAMP WHERE id=?";
+        jdbcClient.sql(sql)
+                .param(1,newBalance)
+                .param(2,walletid)
+                .update();
+    }
 }
