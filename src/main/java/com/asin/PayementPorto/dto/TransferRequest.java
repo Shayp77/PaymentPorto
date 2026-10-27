@@ -1,0 +1,10 @@
+package com.asin.PayementPorto.dto;
+
+import java.math.BigDecimal;
+
+public record TransferRequest(
+        String fromAccountNumber,
+        String toAccountNumber,
+        BigDecimal amount
+) {
+}

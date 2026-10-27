@@ -1,6 +1,7 @@
 package com.asin.PayementPorto.controller;
 
 import com.asin.PayementPorto.dto.TopUpRequest;
+import com.asin.PayementPorto.dto.TransferRequest;
 import com.asin.PayementPorto.service.TransactionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,5 +23,10 @@ public class TransactionController {
     public ResponseEntity<UUID> topUpTransaction(@Valid @RequestBody TopUpRequest request){
         UUID newTransactionId=service.topUpTransaction(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(newTransactionId);
+    }
+    @PostMapping("/transfer")
+    public ResponseEntity<UUID> transferTransacion(@Valid @RequestBody TransferRequest request){
+        UUID newId=service.transfer(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(newId);
     }
 }
