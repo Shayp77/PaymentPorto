@@ -39,4 +39,16 @@ public class WalletService {
     public void updateBalance(UUID id, BigDecimal amount){
         walletRepository.updateBalance(id, amount);
     }
+    public WalletDataResponse getWalletForUpdate(String accountNumber){
+        Wallet wallet=walletRepository.getWalletForUpdate(accountNumber).orElseThrow(
+                () -> new RuntimeException("Account Number TIdka Mempunyai Wallet")
+        );
+        return new WalletDataResponse(
+                wallet.id(),
+                wallet.userId(),
+                wallet.accountNumber(),
+                wallet.balance(),
+                wallet.status()
+        );
+    }
 }

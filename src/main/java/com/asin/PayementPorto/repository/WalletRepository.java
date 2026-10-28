@@ -42,6 +42,13 @@ public class WalletRepository {
                 .query(Wallet.class)
                 .optional();
     }
+    public Optional<Wallet> getWalletForUpdate(String accountNumber){
+        String sql="Select * From wallets where account_number=? FOR UPDATE";
+        return jdbcClient.sql(sql)
+                .param(accountNumber)
+                .query(Wallet.class)
+                .optional();
+    }
     public void updateBalance(UUID walletid, BigDecimal newBalance){
         String sql="Update wallets Set balance=?, updated_at=CURRENT_TIMESTAMP WHERE id=?";
         jdbcClient.sql(sql)

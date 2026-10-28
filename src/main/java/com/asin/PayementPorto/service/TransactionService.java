@@ -27,7 +27,7 @@ public class TransactionService {
             throw new RuntimeException("Nominal Top Up harus lebih besar dari 0");
         }
 
-        WalletDataResponse wallet = walletService.getWallet(request.accountNumber());
+        WalletDataResponse wallet = walletService.getWalletForUpdate(request.accountNumber());
 
         BigDecimal newBalance = wallet.balance().add(request.amount());
 
@@ -49,24 +49,32 @@ public class TransactionService {
         return transaction.id();
     }
     @Transactional
-    public UUID transfer(TransferRequest request){
-        if (request.amount().compareTo(BigDecimal.ZERO)<=0){
-            throw  new RuntimeException("Nominal transfer harus lebih besar dari 0");
+    public UUID transfer(TransferRequest request) {
+
+        if (request.amount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new RuntimeException("Nominal transfer harus lebih besar dari 0");
         }
-        if (request.fromAccountNumber().equals(request.toAccountNumber())){
-            throw new RuntimeException("TIdak bisa transfer ke rekening sendiri");
+        if (request.fromAccountNumber().equals(request.toAccountNumber())) {
+            throw new RuntimeException("Tidak bisa transfer ke rekening sendiri");
         }
-        WalletDataResponse sender=walletService.getWallet(request.fromAccountNumber());
-        WalletDataResponse receiver=walletService.getWallet(request.toAccountNumber());
-        if (sender.balance().compareTo(request.amount())<=0){
+        WalletDataResponse sender;
+        WalletDataResponse receiver;
+        if (request.fromAccountNumber().compareTo(request.toAccountNumber()) < 0) {
+            sender = walletService.getWalletForUpdate(request.fromAccountNumber());
+            receiver = walletService.getWalletForUpdate(request.toAccountNumber());
+        } else {
+            receiver = walletService.getWalletForUpdate(request.toAccountNumber());
+            sender = walletService.getWalletForUpdate(request.fromAccountNumber());
+        }
+        if (sender.balance().compareTo(request.amount()) < 0) {
             throw new RuntimeException("Saldo tidak mencukupi untuk melakukan transfer");
         }
-        BigDecimal newSender=sender.balance().subtract(request.amount());
-        BigDecimal newReceiver=receiver.balance().add(request.amount());
-        walletService.updateBalance(sender.id(),newSender);
-        walletService.updateBalance(receiver.id(),newReceiver);
-        String referenceNo="TRF-"+System.currentTimeMillis();
-        Transaction tf=new Transaction(
+        BigDecimal newSenderBalance = sender.balance().subtract(request.amount());
+        BigDecimal newReceiverBalance = receiver.balance().add(request.amount());
+        walletService.updateBalance(sender.id(), newSenderBalance);
+        walletService.updateBalance(receiver.id(), newReceiverBalance);
+        String referenceNo = "TRF-" + System.currentTimeMillis();
+        Transaction transaction = new Transaction(
                 UUID.randomUUID(),
                 referenceNo,
                 sender.id(),
@@ -76,7 +84,7 @@ public class TransactionService {
                 "SUCCESS",
                 LocalDateTime.now()
         );
-        transactionRepository.createTransaction(tf);
-        return tf.id();
+        transactionRepository.createTransaction(transaction);
+        return transaction.id();
     }
 }
